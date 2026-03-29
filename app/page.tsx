@@ -1,67 +1,147 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-export default function YoungHoDesktop() {
-  const [lore, setLore] = useState("Status: Initializing Delusion... 🤡");
+export default function YoungHoUltra() {
+  const [input, setInput] = useState("");
+  const [aura, setAura] = useState(100);
+  const [chatLog, setChatLog] = useState([{ role: "system", content: "System Booted. Aura Stabilized at 100. 💅" }]);
+  
+  // Music State
+  const [songName, setSongName] = useState("No Track Loaded");
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      if (audioRef.current) {
+        audioRef.current.src = url;
+        setSongName(file.name);
+        setIsPlaying(true);
+        audioRef.current.play();
+      }
+    }
+  };
+
+  const handleRoast = () => {
+    if (!input) return;
+    const msg = input.toLowerCase();
+    setChatLog(prev => [...prev, { role: "user", content: input }]);
+    
+    // Aura Logic
+    let auraChange = 0;
+    let reply = "Processing... the energy is mid. 💀";
+
+    if (msg.includes("crush") || msg.includes("office")) {
+      auraChange = -20;
+      reply = "MS Office for a crush? Aura: -20. You're a simp-lord. 🤡";
+    } else if (msg.includes("kali") || msg.includes("network") || msg.includes("python")) {
+      auraChange = +15;
+      reply = "Networking talk? Aura: +15. Tactical movement detected. 🔌";
+    } else if (msg.includes("calories") || msg.includes("waist")) {
+      auraChange = -10;
+      reply = "calories again? Seems fat mama is sweating🤣🤣. Aura: -10. ⚠️";
+    }
+
+    setAura(prev => Math.max(0, Math.min(200, prev + auraChange)));
+    setTimeout(() => {
+      setChatLog(prev => [...prev, { role: "system", content: reply }]);
+    }, 600);
+    setInput("");
+  };
 
   return (
-    <main className="min-h-screen bg-[#FDF2F8] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] overflow-hidden font-sans cursor-crosshair">
-      
-      {/* --- THE HEADER BAR --- */}
-      <div className="w-full bg-white/80 backdrop-blur-md border-b-2 border-pink-200 p-2 flex justify-between items-center px-6 shadow-sm">
-        <h1 className="text-pink-500 font-black tracking-tighter text-2xl italic">youngHo.</h1>
-        <div className="flex gap-4 items-center">
-          <div className="bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-xs font-bold border border-pink-200">
-            L-Counter: 0 💔
+    <main className="min-h-screen bg-[#FDF2F8] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] overflow-hidden font-sans cursor-crosshair p-4">
+      <audio ref={audioRef} onEnded={() => setIsPlaying(false)} />
+
+      {/* --- HEADER --- */}
+      <div className="w-full bg-white/90 backdrop-blur-md border-b-4 border-pink-400 p-4 flex justify-between items-center rounded-2xl shadow-xl z-50 relative">
+        <h1 className="text-pink-600 font-black text-3xl italic tracking-tighter uppercase">youngHo.exe</h1>
+        <div className="flex gap-6 items-center font-bold">
+          <div className="text-right">
+            <p className="text-[10px] text-pink-400 uppercase">Current Aura</p>
+            <p className={`text-xl ${aura > 100 ? 'text-green-500' : 'text-pink-600'}`}>{aura}</p>
           </div>
-          <div className="w-8 h-8 rounded-full bg-blue-400 border-2 border-white shadow-sm overflow-hidden">
-            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=clown" alt="avatar" />
+          <div className="w-12 h-12 rounded-full border-4 border-pink-200 overflow-hidden shadow-inner bg-pink-50">
+             <img src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${aura}`} alt="status" />
           </div>
         </div>
       </div>
 
-      {/* --- THE DRAGGABLE CHAT WINDOW --- */}
-      <div className="absolute top-24 left-10 w-96 bg-white border-4 border-pink-400 rounded-3xl shadow-[8px_8px_0px_0px_rgba(244,114,182,1)] overflow-hidden transition-all hover:scale-[1.02]">
-        <div className="bg-pink-400 p-2 flex justify-between items-center px-4">
-          <span className="text-white font-bold text-sm">menace_chat.exe</span>
+      {/* --- AURA TRACKER BAR (Left Side) --- */}
+      <div className="absolute left-6 top-32 bottom-10 w-8 bg-white border-2 border-pink-200 rounded-full overflow-hidden flex flex-col-reverse shadow-lg">
+        <motion.div 
+          animate={{ height: `${(aura / 200) * 100}%` }}
+          className={`w-full transition-colors duration-500 ${aura > 100 ? 'bg-green-400' : 'bg-pink-500'}`}
+        />
+      </div>
+
+      {/* --- CHAT WINDOW (Draggable) --- */}
+      <motion.div drag dragMomentum={false} className="absolute top-32 left-24 w-80 bg-white border-4 border-black rounded-3xl shadow-[10px_10px_0px_0px_#000] z-20 overflow-hidden">
+        <div className="bg-black p-2 text-white text-[10px] font-bold flex justify-between px-4">
+          <span>MENACE_CONSOLE</span>
           <div className="flex gap-1">
-            <div className="w-3 h-3 rounded-full bg-white/50"></div>
-            <div className="w-3 h-3 rounded-full bg-white/50"></div>
+             <div className="w-2 h-2 rounded-full bg-red-500" />
+             <div className="w-2 h-2 rounded-full bg-yellow-500" />
           </div>
         </div>
-        <div className="p-6 space-y-4 h-[400px] flex flex-col justify-between">
-          <div className="text-pink-600 font-medium italic">
-            "Oh, you're back? Did the MS Office activation expire or did the crush just leave you on read? 💀"
+        <div className="h-64 p-4 overflow-y-auto space-y-3 bg-gray-50 text-[11px]">
+          {chatLog.map((m, i) => (
+            <div key={i} className={`p-2 rounded-lg ${m.role === 'system' ? 'bg-pink-100 text-pink-700 italic border border-pink-200' : 'bg-black text-white ml-4'}`}>
+              {m.content}
+            </div>
+          ))}
+        </div>
+        <div className="p-3 bg-white border-t-2 border-black flex gap-2">
+          <input 
+            value={input} onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleRoast()}
+            className="flex-1 p-2 bg-gray-100 rounded text-black text-xs outline-none" 
+            placeholder="Drop the L here..."
+          />
+        </div>
+      </motion.div>
+
+      {/* --- MUSIC PLAYER (Right Side) --- */}
+      <motion.div drag dragMomentum={false} className="absolute top-32 right-10 w-64 bg-white border-4 border-blue-400 rounded-2xl p-4 shadow-xl z-10">
+        <div className="flex flex-col items-center gap-3">
+          <motion.div 
+            animate={{ rotate: isPlaying ? 360 : 0 }}
+            transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+            className="w-24 h-24 bg-gradient-to-tr from-blue-400 to-purple-500 rounded-full border-8 border-black flex items-center justify-center shadow-lg"
+          >
+            <div className="w-6 h-6 bg-white rounded-full border-2 border-black" />
+          </motion.div>
+          <div className="text-center">
+            <p className="text-[10px] font-black uppercase text-blue-600 truncate w-48">{songName}</p>
+            <p className="text-[8px] text-gray-400 italic">NOW PLAYING</p>
           </div>
-          
-          <div className="space-y-2">
-            <input 
-              type="text" 
-              placeholder="Dump your lore here..."
-              className="w-full p-3 bg-pink-50 border-2 border-pink-200 rounded-xl focus:outline-none focus:border-pink-400 text-pink-700 placeholder:text-pink-300"
-            />
-            <button className="w-full bg-pink-500 text-white font-black py-3 rounded-xl hover:bg-pink-600 transition-colors">
-              ROAST ME ✨
+          <div className="flex gap-2">
+            <label className="bg-blue-500 text-white px-3 py-1 rounded text-[10px] font-bold cursor-pointer hover:bg-blue-600 transition-colors">
+              UPLOAD MP3
+              <input type="file" accept="audio/*" onChange={handleFileUpload} className="hidden" />
+            </label>
+            <button 
+              onClick={() => {
+                if (audioRef.current?.paused) { audioRef.current.play(); setIsPlaying(true); }
+                else { audioRef.current?.pause(); setIsPlaying(false); }
+              }}
+              className="bg-black text-white px-3 py-1 rounded text-[10px] font-bold"
+            >
+              {isPlaying ? "PAUSE" : "PLAY"}
             </button>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* --- THE MEDIA VAULT STICKER --- */}
-      <div className="absolute bottom-10 right-10 w-64 bg-yellow-100 border-2 border-dashed border-yellow-400 p-4 rotate-3 shadow-lg rounded-lg">
-        <h3 className="font-black text-yellow-700 text-sm mb-2">💿 MEDIA_VAULT</h3>
-        <p className="text-[10px] text-yellow-600 uppercase font-bold mb-3">Playing: SZA - Snooze (Down Bad Edit)</p>
-        <div className="h-1 bg-yellow-400 w-full rounded-full overflow-hidden">
-          <div className="h-full bg-yellow-600 w-1/3 animate-pulse"></div>
-        </div>
-      </div>
-
-      {/* --- FLOATING STICKER --- */}
-      <div className="absolute top-1/2 right-1/4 animate-bounce">
-         <span className="bg-purple-500 text-white p-2 rounded-lg font-bold -rotate-12 shadow-md">
-           PERIMETER FENCE ⚠️
-         </span>
-      </div>
+      {/* --- FLOATING STATUS STICKER --- */}
+      <motion.div drag dragMomentum={false} className="absolute bottom-10 right-10 bg-yellow-300 border-2 border-black p-2 rotate-6 shadow-md cursor-pointer">
+        <p className="font-mono text-[10px] font-bold tracking-widest text-black">
+          STATUS: {aura > 120 ? "PEAK PERFORMANCE" : aura > 50 ? "DELUSIONAL" : "CRASHING OUT"}
+        </p>
+      </motion.div>
 
     </main>
   );
